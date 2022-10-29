@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 
 
 
@@ -16,7 +18,7 @@ var leaderRouter = require('./routes/leadersRouter');
 const mongoose = require('mongoose');
 const Dishes = require('./models/dishes');
 
-const url = "mongodb://localhost:27017/confusion";
+const url = "mongodb://127.0.0.1:27017/confusion";
 const connect = mongoose.connect(url);
 
 connect.then((db)=> {
@@ -34,13 +36,21 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser('12345-67890-09876-54321'));
+app.use(session({
+  name: 'session_id',
+  secret: '12345-67890-09876-54321',
+  saveUninitialized: false,
+  resave: false,
+  store: new FileStore()
+
+}));
+//app.use(cookieParser('12345-67890-09876-54321'));
 
 function auth(req, res, next) {
-  console.log(req.signedCookies);
+  console.log(req.session);
 
 
-  if (!req.signedCookies.user) {
+  if (!req.session.user) {
     let authHeader = req.headers.authorization;
     if (!authHeader) {
       let err = new Error('You are not authenticated');
@@ -54,7 +64,7 @@ function auth(req, res, next) {
     let password = auth[1];
 
     if (username === 'admin' && password === 'password') {
-     res.cookie('user', 'admin', {signed: true});
+    req.session.user = 'admin';
      next();
     } else {
       let err = new Error('You are not authenticated');
@@ -63,7 +73,7 @@ function auth(req, res, next) {
       return next(err);
     }
   } else {
-    if (req.signedCookies.user === 'admin') {
+    if (req.session.user === 'admin') {
       next();
     } else {
       let err = new Error('You are not authenticated');
