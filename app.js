@@ -17,6 +17,8 @@ var usersRouter = require('./routes/users');
 var dishRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promotionsRouter');
 var leaderRouter = require('./routes/leadersRouter');
+var favoriteRouter = require('./routes/favoritesRouter');
+
 
 const mongoose = require('mongoose');
 const uploadRouter = require('./routes/uploadRouter');
@@ -61,6 +63,7 @@ app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
 app.use('/leaders',leaderRouter);
 app.use('/imageUpload',uploadRouter);
+app.use('/favorites',favoriteRouter);
 
 // Secure traffic only
 app.all('*', (req, res, next) => {
